@@ -1,2 +1,0 @@
-- get the most active zones in server
-- create mob groups that will try to ambush players

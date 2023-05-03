@@ -1,3 +1,0 @@
-- killed citizens become zombies
-- zombies attack everyone
-- once a zombie is killed he will not rise the second time
