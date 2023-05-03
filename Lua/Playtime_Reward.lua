@@ -1,9 +1,9 @@
-local enabled = true
+local enabled = false
 local PlayedTimeInterval = 30 --minutes
-local MoneyReward = 30000 -- COPPER (100 Copper = 1 Silver| 100 Silver = 1 Gold) 10000 Copper = 1 gold
+local MoneyReward = 10000 -- COPPER (100 Copper = 1 Silver| 100 Silver = 1 Gold) 10000 Copper = 1 gold
 local HonorReward = 0 -- Honor points to reward
-local ArenaReward = 10 -- Arena points to reward
-local ItemReward = 41593 -- Itemid if 0 then no item given
+local ArenaReward = 0 -- Arena points to reward
+local ItemReward = 0 -- Itemid if 0 then no item given
 local ItemRewardCount = 1 -- How many of the item to reward.
 
 local playtime

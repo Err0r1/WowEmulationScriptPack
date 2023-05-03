@@ -1,3 +1,9 @@
+--  ___ ___ _ __      _____   ___  ___    ___ ___ ___  _   ___ _  __
+-- | __| __| |\ \    / / _ \ / _ \|   \  | _ \ __| _ \/_\ / __| |/ /
+-- | _|| _|| |_\ \/\/ / (_) | (_) | |) | |   / _||  _/ _ \ (__| ' < 
+-- |_| |___|____\_/\_/ \___/ \___/|___/  |_|_\___|_|/_/ \_\___|_|\_\
+
+
 local AIO = AIO or require("AIO")
 
 -- CLIENT SECRET
@@ -7,14 +13,21 @@ local handlerName = "yQ4CiWjHET"
 --|TInterface/ICONS/VAS_RaceChange:35:35|t
 local LastContainerNum = 1
 -- Settings
-local iconSize = 36	
-local leftConst = 125
-local itemsPerRow = 6
-
+local iconSize = 35	
+local leftConst = 172
+local itemsPerRow = 7
+local current_class = 1
+local current_spec = 1
 local prices = {}
 
 -- Ready-to-use for the system
-local classes = {"Death Knight", "Druid", "Hunter", "Mage", "Paladin", "Priest", "Rogue", "Shaman", "Warlock", "Warrior", "MONK", "DEMONHUNTER"};
+
+local classes = {"Druid", "Hunter", "Mage", "Paladin", "Priest", "Rogue", "Shaman", "Warlock", "Warrior", "MONK", "DEMONHUNTER"};
+local class_list = {"DRUID", "HUNTER", "MAGE", "PALADIN", "PRIEST", "ROGUE", "SHAMAN", "WARLOCK", "WARRIOR"}
+local spell_point_list = {}
+local talent_point_list = {}
+
+
 --Data
 if AIO.IsServer() then
     --Spells
@@ -32,18 +45,67 @@ if AIO.AddAddon() then
 end
 
 --Variables
+
 local spellsplus, spellsminus = {}, {}
 local tpellsplus, tpellsminus = {}, {}
 local talentsplus, talentsminus = {}, {}
 local db = CLDB
 
 --Functions
+
+local function CountSpellPoints(c, s)
+	local r = 0
+	for k,v in pairs(db.data.spells[class_list[c]][s][4]) do
+		--check if v[1][1] in db.spells, if so r++
+		if tContains(db.spells, v[1][1]) then 
+			r = r + 1
+		end
+	end
+	return r
+end
+
+local function CountTalentPoints(c, s)
+	local r = 0
+	for k,v in pairs(db.data.talents[class_list[c]][s][4]) do
+		--check if v[1][1] in db.spells, if so r++
+		for i,j in pairs(v[1]) do
+			if tContains(db.talents, j) then 
+				r = r + 1
+			end
+		end
+	end
+	return r	
+end
+
+local function UpdatePointText()
+	for k,v in pairs(class_list) do --zeta
+        local cap = 0
+        local ctp = 0
+        for i = 1, 3 do 
+            local ap = CountSpellPoints(k, i)
+            cap = cap + ap
+            local tp = CountTalentPoints(k,i)
+            ctp = ctp + tp
+            for j = 1, 2 do
+                _G["CLContainer"..j.."Sub"..k.."SubButton"..i].text:SetText(tostring(ap))
+                _G["CLContainer"..j.."Sub"..k.."SubButton"..i].text2:SetText(tostring(tp))
+            end
+        end
+        for j = 1, 2 do 
+            _G["CLContainer"..j.."SubButton"..k].text:SetText(tostring(cap))	
+            _G["CLContainer"..j.."SubButton"..k].text2:SetText(tostring(ctp))	
+        end
+    end
+end
+
 local function FrameToggle(frame)
     local f = _G[frame]
     if f ~= nil then
         if f:IsVisible() ~= 1 then
             f:Show()
+			PlaySound(10590) -- jewelcrafting complete sound
         elseif f:IsVisible() == 1 then
+			PlaySound(12189) -- guildvaultclose sound
             f:Hide()
         end
     end
@@ -56,6 +118,7 @@ local function FrameShow(fname)
     end
     if frame ~= nil and frame:IsVisible() ~= 1 then
         frame:Show()
+		PlaySound(83) -- jewelcrafting complete sound
     end
 end
 
@@ -166,68 +229,85 @@ local function DoShit()
         frame.bottomright:SetSize(wr, hb)
     end
 
-    local function MakeButton(name, parent)
+    local function MakeButton(name, parent) --gamma
         local button = CreateFrame("Button", name, parent)
         button:SetNormalFontObject(GameFontNormal)
         button:SetHighlightFontObject(GameFontHighlight)
         button:SetDisabledFontObject(GameFontDisable)
-if name == "CLButton1" or name == "CLButton2" then
-
-local texture = button:CreateTexture()
-		if name == "CLButton1" then
-			texture:SetTexture "Interface\\Icons\\INV_Misc_Book_09"
+		if name == "CLButton1" or name == "CLButton2" then
+			local texture = button:CreateTexture("BACKGROUND")
+			if name == "CLButton1" then
+				texture:SetTexture("Interface\\Icons\\INV_Misc_Book_09")
+				button.txt = button:CreateFontString(nil, "OVERLAY") -- Spec name-- intend to set
+				button.txt:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
+				button.txt:SetPoint("CENTER", -0, -25)
+				button.txt:SetText("Spells")
+				button.txt:SetTextColor(230/255,230/255,230/255)
+				button.txttex = button:CreateTexture(nil, "ARTWORK")
+				button.txttex:SetTexture("Interface/Buttons/CLCircleSmall")
+				button.txttex:SetPoint("CENTER", button.txt, "CENTER")
+			else
+				texture:SetTexture("Interface\\Icons\\Ability_Marksmanship")
+				button.txt = button:CreateFontString(nil, "OVERLAY") -- Spec name-- intend to set
+				button.txt:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
+				button.txt:SetPoint("CENTER", -0, -25)
+				button.txt:SetText("Talents")
+				button.txt:SetTextColor(230/255,230/255,230/255)
+				button.txttex = button:CreateTexture(nil, "ARTWORK")
+				button.txttex:SetTexture("Interface/Buttons/CLCircleSmall")
+				button.txttex:SetPoint("CENTER", button.txt, "CENTER")
+			end
+       		-- texture:SetTexCoord(0, 0.625, 0, 0.6875)
+			local size = button:GetSize()
+        	texture:SetAllPoints()
+			texture:SetSize(0.5 * size, 0.5 * size)
+        	button.texture = texture
+			
+			--CREATES PUSHED FOR TALENTS_SPELLS
+			t = CreateTexture(button, nil, "Interface\\Buttons\\ButtonHilight-Square", "ADD")
+			t:SetSize(30,32) -- Had to force a stupid size for some reason
+			t:SetPoint("CENTER")
+			button.pushed = t
+			button:SetPushedTexture(button.pushed)
+			
+			-- CREATES HIGHLIGHT FOR TALENT-SPELLS
+			t = CreateTexture(button, nil, "Interface\\Buttons\\ButtonHilight-Square", "ADD")
+			t:SetSize(30,32)
+			t:SetPoint("CENTER")
+			button.highlight = t
+			button:SetHighlightTexture(button.highlight)
+			
+        	texture = button:CreateTexture()
+        	texture:SetAllPoints(button)
 		else
-			texture:SetTexture "Interface\\Icons\\Ability_Marksmanship"
+		 	local texture = button:CreateTexture()
+        	texture:SetTexture "Interface\\Buttons\\UI-Panel-Button-Up"
+        	texture:SetTexCoord(0, 0.625, 0, 0.6875)
+        	texture:SetAllPoints(button)
+        	button.normal = texture
+        	button:SetNormalTexture(texture)
+        	texture = button:CreateTexture()
+        	texture:SetTexture "Interface\\Buttons\\UI-Panel-Button-Down"
+        	texture:SetTexCoord(0, 0.625, 0, 0.6875)
+        	texture:SetAllPoints(button)
+        	button.pushed = texture
+        	button:SetPushedTexture(texture)
+        	texture = button:CreateTexture()
+        	texture:SetTexture "Interface\\Buttons\\UI-Panel-Button-Highlight"
+        	texture:SetTexCoord(0, 0.625, 0, 0.6875)
+        	texture:SetAllPoints(button)
+        	button:SetHighlightTexture(texture)
 		end
-       -- texture:SetTexCoord(0, 0.625, 0, 0.6875)
-        texture:SetAllPoints(button)
-        button.normal = texture
-        button:SetNormalTexture(texture)
-
-        texture = button:CreateTexture()
-        if name == "CLButton1" then
-			texture:SetTexture "Interface\\Icons\\INV_Misc_Book_09"
-		else
-			texture:SetTexture "Interface\\Icons\\Ability_Marksmanship"
-		end
-
-        texture = button:CreateTexture()
-        texture:SetTexture "Interface\\Buttons\\CheckButtonHilight"
-       -- texture:SetTexCoord(0, 0.625, 0, 0.6875)
-        texture:SetAllPoints(button)
-        button:SetHighlightTexture(texture)
-		else
-		 local texture = button:CreateTexture()
-        texture:SetTexture "Interface\\Buttons\\UI-Panel-Button-Up"
-        texture:SetTexCoord(0, 0.625, 0, 0.6875)
-        texture:SetAllPoints(button)
-        button.normal = texture
-        button:SetNormalTexture(texture)
-
-        texture = button:CreateTexture()
-        texture:SetTexture "Interface\\Buttons\\UI-Panel-Button-Down"
-        texture:SetTexCoord(0, 0.625, 0, 0.6875)
-        texture:SetAllPoints(button)
-        button.pushed = texture
-        button:SetPushedTexture(texture)
-
-        texture = button:CreateTexture()
-        texture:SetTexture "Interface\\Buttons\\UI-Panel-Button-Highlight"
-        texture:SetTexCoord(0, 0.625, 0, 0.6875)
-        texture:SetAllPoints(button)
-        button:SetHighlightTexture(texture)
-end
-       
         return button
     end
 
     local function MakeRankFrame(button, anchor)
-        local t = CreateTexture(button, "OVERLAY", "Interface\\Textures\\border")
+        --local t = CreateTexture(button, "OVERLAY", "Interface\\Textures\\border")
         t:SetSize(32, 32)
         t:SetPoint("CENTER", button, anchor)
         local fs = button:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
-        fs.texture = t
-        fs:SetPoint("CENTER", t)
+        --fs.texture = t
+        fs:SetPoint("TOP", button, "BOTTOM", 0, -2)
         return fs
     end
 
@@ -236,29 +316,31 @@ end
         -- ItemButtonTemplate (minus Count and Slot)
         button:SetSize(size, size)
         local t = CreateTexture(button, "BORDER")
-        t:SetSize(size, size)
+        t:SetSize(size * 0.8, size * 0.8)
         t:SetPoint("CENTER")
         button.texture = t
 		if(empty == nil) then
-			t = CreateTexture(button, nil, "Interface\\Buttons\\UI-Quickslot2")
-			t:SetSize(size * 1.7, size * 1.7)
+			t = CreateTexture(button, nil, "Interface\\Buttons\\CLCircle")
+			t:SetSize(size * 1.2, size * 1.2)
 			t:SetPoint("CENTER")
 			button.normal = t
 			button:SetNormalTexture(t)
-			t = CreateTexture(button, nil, "Interface\\Buttons\\UI-Quickslot-Depress")
-			t:SetSize(size, size)
+			t = CreateTexture(button, nil, "Interface\\Buttons\\ButtonHilight-Square", "ADD")
+			t:SetSize(size * 1.2, size * 1.2)
 			t:SetPoint("CENTER")
 			button.pushed = t
-			button:SetPushedTexture(t)
+			button:SetPushedTexture(button.pushed)
 			t = CreateTexture(button, nil, "Interface\\Buttons\\ButtonHilight-Square", "ADD")
 			t:SetSize(size, size)
 			t:SetPoint("CENTER")
 			button:SetHighlightTexture(t)
+			--button:SetPushedTexture(t)
+			
 			-- TalentButtonTemplate
-			local texture = CreateTexture(button, "BACKGROUND", "Interface\\Buttons\\UI-EmptySlot-White")
+			--[[local texture = CreateTexture(button, "BACKGROUND", "Interface\\Buttons\\UI-EmptySlot-White")
 			texture:SetSize(size * 1.7, size * 1.7)
 			texture:SetPoint("CENTER")
-			button.slot = texture
+			button.slot = texture]]
 		end
         if rank ~= nil then
             button.rank = MakeRankFrame(button, "BOTTOMRIGHT")
@@ -276,13 +358,17 @@ end
     --Utility Functions
     function GetPoints(type)
         if type == "ap" then
-            local ap = 10 - #db.spells
+            local ap = math.floor(UnitLevel("player") * 0.50) - #db.spells
             local tap = #spellsplus
             return ap - tap, tap
         end
 
         if type == "tp" then
-            local tp = 15 - (#db.talents + #db.tpells)
+            local tp = UnitLevel("player") - 9
+            if tp < 0 then
+                tp = 0
+            end
+            tp = tp - (#db.talents + #db.tpells)
             local ttp = #talentsplus + #tpellsplus
             return tp - ttp, ttp
         end
@@ -315,14 +401,14 @@ end
     local function LearnConfirm(action, state)
         local tab = _G["CLMainFrame"]:GetAttribute("tab")
         if tab ~= nil and tab > 0 then
-            if action == "Learn" and state ~= "true" then
+            if action == "Apply" and state ~= "true" then
                 StaticPopup_Show("LEARN_CONFIRM")
             end
             if action == "Reset" and state ~= "true" then
                 StaticPopup_Show("RESET_CONFIRM")
             end
 
-            if action == "Learn" and state == "true" then
+            if action == "Apply" and state == "true" then
                 if tab == 1 then
                     for i = 1, #spellsplus do
                         if not tContains(db.spells, spellsplus[i]) then
@@ -334,6 +420,16 @@ end
                             tinsert(db.tpells, tpellsplus[i])
                         end
                     end
+					for i=1, #spellsminus do
+                        if tContains(db.spells, spellsminus[i]) then
+                            tRemoveKey(db.spells, spellsminus[i])
+                        end
+                    end
+                    for i=1, #tpellsminus do
+                        if tContains(db.tpells, tpellsminus[i]) then
+                            tRemoveKey(db.tpells, tpellsminus[i])
+                         end
+                    end
                     wipe(spellsplus)
                     wipe(spellsminus)
                     wipe(tpellsplus)
@@ -341,7 +437,7 @@ end
                     sort(db.spells)
                     sort(db.tpells)
                     AIO.Handle(handlerName, "LearnSpell", db.spells, db.tpells, clientSecret)
-                end
+				end
 
                 if tab == 2 then
                     for i = 1, #talentsplus do
@@ -349,12 +445,17 @@ end
                             tinsert(db.talents, talentsplus[i])
                         end
                     end
+					for i=1, #talentsminus do
+                        if tContains(db.talents, talentsminus[i]) then
+                            tRemoveKey(db.talents, talentsminus[i])
+                        end
+                    end
                     wipe(talentsplus)
                     wipe(talentsminus)
                     sort(db.talents)
                     AIO.Handle(handlerName, "LearnTalent", db.talents, clientSecret)
                 end
-
+				
                
             end
 
@@ -372,6 +473,7 @@ end
                 end
 
             end
+			UpdatePointText()
             SelectTab(tab, "CLContainer", "CLMainFrame", "CLButton")
         end
     end
@@ -565,7 +667,7 @@ end
             spellcheck = spellcheck2
         end
 
-        local left, top = leftConst, -183
+        local left, top = leftConst, -12
 
         for i = 1, #spells do
             local spellid, levelid = spells[i][1], spells[i][2]
@@ -593,6 +695,7 @@ end
             prank = rank - 1
 
             local icon = ({GetSpellInfo(nspell)})[3]
+			if nspell == 75 then icon = "Interface/Icons/Ability_Whirlwind" end
             local button =
                 _G["CLSpellsClass" .. class .. "Spec" .. spec .. mode .. i] or
                 NewButton("CLSpellsClass" .. class .. "Spec" .. spec .. mode .. i, parent, iconSize, icon, "true")
@@ -601,6 +704,23 @@ end
             if button:GetAttribute("hrank") == nil or eqt == "true" then
                 button:SetAttribute("hrank", rank)
             end
+			if mode == "spell" then
+				if spell_point_list[class] == nil then
+					spell_point_list[class] = {}
+				end
+				if spell_point_list[class][spec] == nil then
+					spell_point_list[class][spec] = {}
+				end
+				spell_point_list[class][spec][icon] = rank
+			else
+				if talent_point_list[class] == nil then
+					talent_point_list[class] = {}
+				end
+				if talent_point_list[class][spec] == nil then
+					talent_point_list[class][spec] = {}
+				end
+				talent_point_list[class][spec][icon] = rank 
+			end
             local hrank = button:GetAttribute("hrank")
 
             local state, saturated, color, acost, tcost, lock, req, rreq =
@@ -687,7 +807,6 @@ end
                 state = "temp"
             end
 			
-			
             if state == "disabled" then
                 saturated = 1
                 color = GRAY_FONT_COLOR
@@ -698,9 +817,8 @@ end
             elseif state == "req" then
                 color = ORANGE_FONT_COLOR
             end
-
             button.texture:SetDesaturated(saturated)
-            button.slot:SetVertexColor(color.r, color.g, color.b)
+            --button.slot:SetVertexColor(color.r, color.g, color.b)
             button.rank:SetVertexColor(color.r, color.g, color.b)
             button.rank:SetText(rank)
 
@@ -725,7 +843,7 @@ end
             end
             if state == "normal" and rank == hrank then
                 if nrank <= ranks then
-                    button:RegisterForClicks("LeftButtonDown")
+                    button:RegisterForClicks("LeftButtonDown","RightButtonDown")
                 end
             end
             if state == "normal" and rank == 0 then
@@ -735,8 +853,8 @@ end
                 button:RegisterForClicks("RightButtonDown")
             end
             if (state == "full" or state == "temp") and rank == hrank then
-                button:RegisterForClicks()
-				clickable = false
+                button:RegisterForClicks("RightButtonDown")
+				--clickable = false
             end
             if state == "req" and rank > hrank and nrank <= ranks and rreq ~= nil then
                 if UnitLevel("player") < nlevel then
@@ -768,7 +886,7 @@ end
 									TempLearnSpell(nspell, ntcost)
 								end
 							end
-                        else if mode == "talent" and tp > 0 and UnitLevel("player") >= nlevel then
+                        else if mode == "talent" and tp >0 and UnitLevel("player") >= nlevel then
                             TempLearnTalent(nspell, ntcost)
                         end
                     end
@@ -791,16 +909,16 @@ end
 
             if i / itemsPerRow == math.floor(i / itemsPerRow) then
                 left = leftConst
-                top = top - 50
+                top = top - 60
             else
-                left = left + 50
+                left = left + 60
             end
         end
     end
 
     --Create Main Button
     local button =
-        _G["CLButton"] or NewButton("CLButton", UIParent, 48, "Interface\\Tooltips\\ui_sigil_nightfae", nil, nil, nil, nil, nil, true) --Interface\\ICONS\\INV_Enchant_FormulaEpic_01
+        _G["CLButton"] or NewButton("CLButton", UIParent, 48, "Interface\\Tooltips\\Book_Icon", nil, nil, nil, nil, nil, true) --Interface\\ICONS\\INV_Enchant_FormulaEpic_01
     button:SetMovable(true)
     button:EnableMouse(true)
     button:SetToplevel(true)
@@ -864,7 +982,7 @@ end
                     ap .. " Ability Points\n" .. tp .. " Talent Points"
                 button.tooltip:AddLine(string, c.r, c.g, c.b, true)
             end
-            button.tooltip:AddLine("Drag with right button for move", 1, 1, 1, true)
+            button.tooltip:AddLine("Hold right mouse to drag this icon.", 1, 1, 1, true)
             button.tooltip:Show()
         end
     )
@@ -904,19 +1022,29 @@ end
     frame:SetMovable(true)
     frame:EnableMouse(true)
     frame:SetToplevel(true)
-	
+	frame:SetClampedToScreen(true)
 	frame.titleRegion = frame:CreateTitleRegion()
-	frame.titleRegion:SetSize(600, 24) -- 600 wide x 24 tall
+	frame.titleRegion:SetSize(967, 24) -- 600 wide x 24 tall
 	frame.titleRegion:SetPoint("TOPLEFT") -- anchor the titleRegion to top left of frame
 	-- this is the drag bar texture
 	frame.titleTexture = frame:CreateTexture("frame_titleTexture", "ARTWORK")
-	frame.titleTexture:SetSize(600, 24)  -- texture is the same size as the title drag bar
+	frame.titleTexture:SetSize(967, 24)  -- texture is the same size as the title drag bar
 	frame.titleTexture:SetPoint("TOPLEFT")
 	
 	
     frame:RegisterForDrag("LeftButton")
     frame:SetToplevel(true)
-	frame:SetSize(440, 620) -- 420x680
+	frame:SetSize(967, 672) -- 420x680
+    --[[frame:SetBackdrop(
+        {
+            bgFile = "Interface\\TutorialFrame\\TutorialFrameBackground",
+            edgeFile = "Interface\\Tooltips\\UI-Tooltip-Border",
+            tile = true,
+            edgeSize = 16,
+            tileSize = 32,
+            insets = {left = 5, right = 5, top = 5, bottom = 5}
+        }
+    )]]
 
     --FrameBackground(frame, "Interface\\QuestFrame\\UI-QuestLog-Empty")
     frame:SetPoint("CENTER", 0, 0)
@@ -940,6 +1068,7 @@ end
         "OnShow",
         function()
             TabSelect()
+			UpdatePointText()
         end
     )
 
@@ -952,33 +1081,35 @@ end
             end
         end
     )
-
+	
+	-- SETS 0 AP	0 TP text in menu. Will need to re-adjust once I figure out currencies
     frame:SetScript(
         "OnUpdate",
         function()
             local ap, tap = GetPoints("ap")
             local tp, ttp = GetPoints("tp")
            -- local string =icons[1].."         "..icons[2].."\n"
-			local string2 = ap
-            if tap > 0 then
+			local string2 = "|cff2dc200" .. ap -- Kinda scuffed, setting colours using built in wow stuff
+            if tap > 0 then					   -- Could put effort in and break up this junk into 2 different parts but eh
                 string2 = string2 .. "(" .. tap .. ")"
             end
            -- string = string .. " AP "..icons[1].." " .. tp
-			string2 = string2.." AP     " .. tp
+			string2 = string2.." SP|r         |cff00B4FF" .. tp
             if ttp > 0 then
                 string2 = string2 .. "(" .. ttp .. ")"
             end
-            string2 = string2 .. " TP "--..icons[2]
+            string2 =string2 .. " TP|r"--..icons[2]
             
             if _G["CLMainFramePoints"] ~= nil then
 			--	CLMainFramePoints.text:SetText(string)
+				CLMainFramePoints.text2:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
                 CLMainFramePoints.text2:SetText(string2)
             end
 
             local tab = _G["CLMainFrame"]:GetAttribute("tab")
             if tab ~= nil and tab > 0 then
  
-               if (tab == 1 and tap > 0) or (tab == 2 and ttp > 0) then
+               if (tab == 1 and #spellsplus + #spellsminus > 0) or (tab == 2 and #talentsplus + #talentsminus + #tpellsplus + #tpellsminus > 0) then
                     FrameShow("CLResetButtonFrame")
                 else
                     FrameHide("CLResetButtonFrame")
@@ -989,8 +1120,8 @@ end
 
     -- Close button
     local button = _G["CLMainFrameClose"] or CreateFrame("Button", "CLMainFrameClose", _G["CLMainFrame"])
-    button:SetSize(32,32)
-    button:SetPoint("TOPRIGHT",13,-82)
+    button:SetSize(32, 32)
+    button:SetPoint("TOPRIGHT", 5.3, 4.5)
     button:SetNormalTexture("Interface\\Buttons\\UI-Panel-MinimizeButton-Up")
     button:SetPushedTexture("Interface\\Buttons\\UI-Panel-MinimizeButton-Down")
     button:SetHighlightTexture("Interface\\Buttons\\UI-Panel-MinimizeButton-Highlight")
@@ -1000,29 +1131,28 @@ end
             FrameHide("CLMainFrame")
         end
     )
-
+	tinsert(UISpecialFrames, frame:GetName())
     -- AP and TP points
     local frame = _G["CLMainFramePoints"] or CreateFrame("Frame", "CLMainFramePoints", _G["CLMainFrame"])
     frame:SetSize(160, 32)
-    frame:SetPoint("BOTTOMLEFT", 103, 95)
-	
+    frame:SetPoint("TOPLEFT", 25, -35)
     frame.text = frame:CreateFontString("CLMainFramePointsText", "OVERLAY", "GameFontNormal")
-	
+	--frame.text:SetTextColor(45/255,194/255,0/255) -- SETS CLASS Points colour
 	CLMainFramePoints.text:SetJustifyV("MIDDLE");
 	CLMainFramePoints.text:SetJustifyH("LEFT");
-    frame.text:SetPoint("TOPRIGHT")
-	
+    frame.text:SetPoint("CENTER")
+		
 	frame.text2 = frame:CreateFontString("CLMainFramePointsText2", "OVERLAY", "GameFontNormal")
-	
+	--frame.text2:SetTextColor(0/255,180/255,255/255)
 	CLMainFramePoints.text2:SetJustifyV("MIDDLE");
 	CLMainFramePoints.text2:SetJustifyH("LEFT");
-    frame.text2:SetPoint("TOPRIGHT")
-    --frame:SetScript("OnUpdate", UpdatePoints)
+    frame.text2:SetPoint("CENTER")
+	--frame:SetScript("OnUpdate", UpdatePoints)
 
     -- Learn Confirm and cancel
     local frame = _G["CLResetFrame"] or CreateFrame("Frame", "CLResetFrame", _G["CLMainFrame"])
     frame:SetSize(160, 32)
-    frame:SetPoint("BOTTOMLEFT", 200, -35)
+    frame:SetPoint("BOTTOMRIGHT")
     --frame:SetScript("OnUpdate", UpdateReset)
 
     local frame = _G["CLResetButtonFrame"] or CreateFrame("Frame", "CLResetButtonFrame", _G["CLResetFrame"])
@@ -1032,8 +1162,21 @@ end
     
     local frame = _G["CLWipeButtonFrame"] or CreateFrame("Frame", "CLWipeButtonFrame", _G["CLResetFrame"])
     frame:SetSize(32, 32)
-    frame:SetPoint("BOTTOMRIGHT",0,0)
-
+    frame:SetPoint("LEFT", 20,0)
+	
+	-- Hijacks the talent button in the main bar and opens my frame instead
+	local b=1.48
+	local spellTalBtn=CreateFrame("Button", "spellTalBtn", MainMenuBarArtFrame, "MainMenuBarMicroButton")
+	spellTalBtn:SetPoint("CENTER",TalentMicroButton)
+	spellTalBtn:SetNormalTexture("Interface/Buttons/UI-MicroButton-World-Up")
+	spellTalBtn:SetPushedTexture("Interface/Buttons/UI-MicroButton-World-Down")
+	spellTalBtn:SetDisabledTexture("Interface/Buttons/UI-MicroButton-World-Disabled")
+	spellTalBtn:SetHighlightTexture("Interface/Buttons/UI-MicroButton-Hilight")
+	spellTalBtn:SetFrameStrata("HIGH")
+	spellTalBtn:SetScript("OnEnter",function(b)GameTooltip:SetOwner(b,"ANCHOR_RIGHT")GameTooltip:AddLine("Spells'n'Shiiieeet")GameTooltip:Show()end)
+	spellTalBtn:SetScript("OnClick",function()ToggleFrame(_G["CLMainFrame"])end)
+	spellTalBtn:SetScript("OnLeave",function(b)GameTooltip:Hide()end)
+	
     local button =
     _G["CLWipeButton"] or
     NewButton(
@@ -1043,29 +1186,69 @@ end
         "Interface\\Tooltips\\Reverse_White",
         nil
     )
-    button:SetPoint("BOTTOMRIGHT", 70, 175)
+    button:SetPoint("BOTTOMRIGHT", 10, 27)
     button:SetScript(
         "OnClick",
         function()
             if not (button:IsEnabled()) then return end
-			 rst = db.reset + 1
-            if (rst > #prices) then
-                rst = #prices
-            end
-            StaticPopup_Show("WIPE_SPELLS",prices[rst])
+            StaticPopup_Show("WIPE_SPELLS")
         end
     )
 	
 
     StaticPopupDialogs["WIPE_SPELLS"] = {
-        text = "Confirm resetting your spells and talents\n\nCurrent price is: %s |TInterface/ICONS/INV_Misc_Apexis_Crystal:20:20|t",
+        text = "Please, confirm resetting ALL your spells and talents",
         button1 = YES,
         button2 = NO,
         OnAccept = function()
             AIO.Handle(handlerName, "WipeAll", clientSecret)
             TabSelect()
             _G["CLMainFrame"]:Hide()
+			UpdatePointText()
         end,
+        OnShow = function(self)
+            rst = db.reset + 1
+            if (rst > #prices) then
+                rst = #prices
+            end
+            MoneyFrame_Update(self.moneyFrame, prices[rst]);
+        end,
+        timeout = 0,
+        whileDead = true,
+        hideOnEscape = true,
+        hasMoneyFrame = 1,
+        preferredIndex = 3
+    }
+	
+	
+	local frame = _G["CLUnusedButtonFrame"] or CreateFrame("Frame", "CLUnusedButtonFrame", _G["CLResetFrame"])
+    frame:SetSize(32, 32)
+    frame:SetPoint("BOTTOMLEFT",0,35)
+
+    local button =
+    _G["CLUnusedButton"] or
+    NewButton(
+        "CLUnusedButton",
+        _G["CLUnusedButtonFrame"],
+        36,
+        "Interface\\Tooltips\\conviction",
+        nil
+    )
+    button:SetPoint("BOTTOMRIGHT", 100, - 8)
+    button:SetScript(
+        "OnClick",
+        function()
+            if not (button:IsEnabled()) then return end
+            StaticPopup_Show("BRUH")
+        end
+    )
+	
+
+    StaticPopupDialogs["BRUH"] = {
+        text = "I'll bash your mum m8.",
+        button1 = "Skiaa",
+        button2 = "ABOS",
+        
         timeout = 0,
         whileDead = true,
         hideOnEscape = true,
@@ -1074,13 +1257,13 @@ end
 	
 	
 
-    local buttons = {"Learn", "Reset"}
+    local buttons = {"Apply", "Reset"}
     for i = 1, #buttons do
         --buttons:
         local button = _G["CLResetButton" .. i] or MakeButton("CLResetButton" .. i, _G["CLResetButtonFrame"])
         button:SetText(buttons[i])
-        button:SetSize(80, 22)
-        button:SetPoint("BOTTOMRIGHT", (81 * (i - 1)), 143) 
+        button:SetSize(75, 32)
+        button:SetPoint("LEFT", 80 * (i - 1)-321, 45) --
         button:SetScript(
             "OnClick",
             function()
@@ -1096,7 +1279,7 @@ end
         button1 = "Yes",
         button2 = "No",
         OnAccept = function()
-            LearnConfirm("Learn", "true")
+            LearnConfirm("Apply", "true")
         end,
         timeout = 0,
         whileDead = true,
@@ -1121,20 +1304,28 @@ end
     local buttons = {"", ""}
     for i = 1, #buttons do
         --buttons:
-        local button = _G["CLButton" .. i] or MakeButton("CLButton" .. i, _G["CLMainFrame"])
+        local button = _G["CLButton" .. i] or MakeButton("CLButton" .. i, _G["CLMainFrame"], true)
         button:SetText(buttons[i])
-        button:SetSize(46, 46)
-        button:SetPoint("TOPRIGHT",50*(i)-105, -118)
-        button:SetScript(
+		button:SetSize(23,23) -- Size of 'spell-talent' buttons
+        button:SetPoint("TOP",50*(i) +6, -110) -- Sets spacing of the 'spell-talent' selection buttons
+		button.norm = button:CreateTexture(nil, "ARTWORK")
+		button.norm:SetTexture("Interface/Buttons/CLCircle")
+		button.norm:SetPoint("CENTER")
+		button.norm:SetSize(30,30)
+		button:SetNormalTexture(button.norm)
+		button:SetScript(
             "OnClick",
             function()
                 SelectTab(i, "CLContainer", "CLMainFrame", "CLButton")
+				SelectTab(current_class, "CLContainer"..i.."Sub", "CLContainer"..i, "CLContainer"..i.."SubButton")
+				SelectTab(current_spec, "CLContainer"..i.."Sub"..current_class.."Sub", "CLContainer"..i.."Sub"..current_class, "CLContainer"..i.."Sub"..current_class.."SubButton")
             end
         )
+		
         --containers:
         local frame = _G["CLContainer" .. i] or CreateFrame("Frame", "CLContainer" .. i, _G["CLMainFrame"])
-        frame:SetSize(_G["CLMainFrame"]:GetWidth() - 24, _G["CLMainFrame"]:GetHeight() - 96)
-        frame:SetPoint("TOPLEFT", 12, -48)
+        frame:SetSize (967, 670)
+        frame:SetPoint("TOPLEFT")
         frame:SetAttribute("tab", 0)
         frame:SetAttribute("child", "CLContainer" .. i .. "Sub")
         frame:Hide()
@@ -1153,14 +1344,13 @@ end
 
     
     local frame = _G["CLClassesFrame"] or CreateFrame("Frame", "CLClassesFrame", _G["CLMainFrame"])
-    frame:SetSize(_G["CLMainFrame"]:GetWidth()/2.8, _G["CLMainFrame"]:GetHeight())
-    frame:SetPoint("TOPRIGHT", frame:GetWidth()-200, 0)
-   
-		t = CreateTexture(frame, "BACKGROUND")
-       t:SetPoint("CENTER",-40,10)
-        frame.background = t
-		frame.background:SetTexture("Interface\\Tooltips\\finalframe")
-		frame.background:SetSize(_G["CLMainFrame"]:GetWidth()*1.1,_G["CLMainFrame"]:GetHeight()*0.79)
+    frame:SetSize(967, 670)
+    frame:SetPoint("TOPLEFT")
+	t = CreateTexture(frame, "BACKGROUND")
+	t:SetTexCoord(0, 0.944, 0, 0.654)
+    frame.background = t
+	frame.background:SetTexture("Interface\\Tooltips\\CLMainFrame")
+	frame.background:SetAllPoints()
 
 		
 
@@ -1194,33 +1384,60 @@ end
                 NewButton(
                     "CLContainer" .. index .. "SubButton" .. i,
                     _G["CLContainer" .. index],
-                    32,
+                    36,
                     "Interface\\GLUES\\CHARACTERCREATE\\UI-CHARACTERCREATE-CLASSES",
                     nil,
                     unpack(CLASS_ICON_TCOORDS[class])
                 )
-            local minusH = 61
-            startPoint = (_G["CLContainer" .. index]:GetHeight() - (minusH*10)) / 2
-            if(i <= 5) then
-			button:SetPoint("TOPRIGHT", -330, -startPoint-minusH * (i -1)-185)--first 5
-			else
-			button:SetPoint("TOPRIGHT", 65, -startPoint-minusH * (i -1)+120)--second 5
-			end
-            button.text =
-                _G["CLContainer" .. index .. "SubButton" .. i .. "Text"] or
-                button:CreateFontString("CLContainer" .. index .. "SubButton" .. i .. "Text", "OVERLAY", "DialogButtonNormalText")
-            button.text:SetPoint("LEFT", 40, 0)
-            button.text:SetFont("Fonts\\MORPHEUS.TTF", 13, "")
-           -- button.text:SetText(classes[i])
-            button:SetScript(
+			button:SetPoint("TOPLEFT", 50, - 54 - 60 * i) -- Sets spacing of class selection buttons
+			-- Creates the Class name tooltip
+			button.tooltip =
+				_G["CLButtontooltip"] or CreateFrame("GameTooltip", "CLButtontooltip", button, "GameTooltipTemplate")
+			button:SetScript("OnEnter",function()
+				-- Gets the class name string. Its all uppercase
+				local spectit = tostring(class)
+				-- Lower cases the entire string
+				spectit = string.lower(spectit)
+				-- Re-uppercases the first letter
+				-- REALLY STUPID but it works -\_(ツ)_/-
+				spectit = spectit:gsub("^%l", string.upper)
+				button.tooltip:Hide()
+				button.tooltip:SetOwner(button, "ANCHOR_RIGHT")
+				button.tooltip:AddLine(spectit, nil, nil, nil, true)
+				button.tooltip:Show()
+			end)
+			button:SetScript("OnLeave",function()
+				button.tooltip:Hide()
+			end)
+			
+            button.text = _G["CLContainer"..index.."SubButton"..i.."Text"] or button:CreateFontString("CLContainer"..index.."SubButton"..i.."Text", "OVERLAY")
+			button.text:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
+ 			button.text:SetPoint("CENTER", 50, 0)
+			button.text:SetText(tostring(CountSpellPoints(i,1) + CountSpellPoints(i,2) + CountSpellPoints(i,3)))
+			button.text:SetTextColor(45/255,194/255,0/255)
+			button.texttex = button:CreateTexture(nil, "ARTWORK")
+			button.texttex:SetTexture("Interface/Buttons/CLCircleSmall")
+			button.texttex:SetPoint("CENTER", button.text, "CENTER")
+
+            button.text2 = _G["CLContainer"..index.."SubButton"..i.."Text2"] or button:CreateFontString("CLContainer"..index.."SubButton"..i.."Text2", "OVERLAY") 
+			button.text2:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
+ 			button.text2:SetPoint("CENTER", 80, 0)
+			button.text2:SetText(tostring(CountTalentPoints(i,1) + CountTalentPoints(i,2) + CountTalentPoints(i, 3)))
+			button.text2:SetTextColor(0/255,180/255,255/255)
+			button.text2tex = button:CreateTexture(nil, "ARTWORK")
+			button.text2tex:SetTexture("Interface/Buttons/CLCircleSmall")
+			button.text2tex:SetPoint("CENTER", button.text2, "CENTER")
+			
+			button:SetScript(
                 "OnClick",
                 function()
-					if not (button:IsEnabled()) then return end
+					if not (button:IsEnabled()) then return end --delta
+					current_class = cnum
                     SelectTab(
                         cnum,
-                        "CLContainer" .. inum .. "Sub",
+                        "CLContainer".. inum .."Sub",
                         "CLContainer" .. inum,
-                        "CLContainer" .. inum .. "SubButton"
+                        "CLContainer".. inum .."SubButton"
                     )
 					LastContainerNum = inum
                 end
@@ -1246,31 +1463,72 @@ end
                     SelectTab(tab, child, "CLContainer" .. inum .. "Sub" .. cnum, child .. "Button")
                 end
             )
-
+			
+			
+			--[[ CREATES BUTTONS FOR SPECS AND SPELLS/TALENTS]]
             --buttons and containers for spells
             for j = 1, #arr[class] do
                 local snum = j
                 local button =
-                    _G["CLContainer" .. index .. "Sub" .. i .. "SubButton" .. j] or
-                    NewButton(
-                        "CLContainer" .. index .. "Sub" .. i .. "SubButton" .. j,
-                        _G["CLContainer" .. index .. "Sub" .. i],
-                        36,
+                    _G["CLContainer" .. index .. "Sub" .. i .. "SubButton" .. j] or NewButton("CLContainer" .. index .. "Sub" .. i .. "SubButton" .. j, _G["CLContainer" .. index .. "Sub" .. i], 36,
                         "Interface\\Icons\\" .. arr[class][j][2],
                         nil
                     )
-                button:SetPoint("TOPRIGHT", 46 * (j) -250, -75)
-                button:SetScript(
+				-- SPEC ICONS + CHILDREN
+                button:SetPoint("TOP", -220, - 80 - 110 * (j))--("TOP", 110 * (j) -330, -80) -- Set spacing of SPEC buttons
+				-- SPEC TITLE
+				--[[button.spectit = button:CreateFontString(nil, "OVERLAY") -- Spec name-- intend to set
+				button.spectit:SetFont("Fonts\\FRIZQT__.TTF", 15, "OUTLINE")
+				button.spectit:SetPoint("CENTER", -0, 30)
+				button.spectit:SetText(tostring(arr[class][j][1]))
+				button.spectit:SetTextColor(230/255,230/255,230/255)]]
+				button.spectittex = button:CreateTexture(nil, "ARTWORK")
+				button.spectittex:SetTexture("Interface/Buttons/CLCircleSmall")
+				button.spectittex:SetPoint("CENTER", button.spectit, "CENTER")
+				button.tooltip =
+						_G["CLButtontooltip"] or CreateFrame("GameTooltip", "CLButtontooltip", button, "GameTooltipTemplate")
+				button:SetScript("OnEnter",function()
+					local spectit = tostring(arr[class][j][1])
+					button.tooltip:Hide()
+					button.tooltip:SetOwner(button, "ANCHOR_RIGHT")
+					button.tooltip:AddLine(spectit, nil, nil, nil, true)
+					button.tooltip:Show()
+				end)
+				button:SetScript("OnLeave",function()
+					button.tooltip:Hide()
+				end)
+
+				-- SPELLS BUTTON
+				button.text = button:CreateFontString(nil, "OVERLAY")
+				button.text:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE") -- Creates text for number of spells learnt in spec
+ 				button.text:SetPoint("CENTER", -15, -35)
+				button.text:SetText(tostring(CountSpellPoints(i,j)))
+				button.text:SetTextColor(45/255,194/255,0/255) -- LIGHT GREEN
+				button.texttex = button:CreateTexture(nil, "ARTWORK")
+				button.texttex:SetTexture("Interface/Buttons/CLCircleSmall")
+				button.texttex:SetPoint("CENTER", button.text, "CENTER")
+				-- TALENTS BUTTON
+                button.text2 = button:CreateFontString(nil, "OVERLAY")-- Creates text for number of talents learnt in spec
+				button.text2:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
+ 				button.text2:SetPoint("CENTER", 15, -35)
+				button.text2:SetText(tostring(CountTalentPoints(i,j)))
+				button.text2:SetTextColor(0/255,180/255,255/255) -- LIGHT BLUE
+				button.text2tex = button:CreateTexture(nil, "ARTWORK")
+				button.text2tex:SetTexture("Interface/Buttons/CLCircleSmall")
+				button.text2tex:SetPoint("CENTER", button.text2, "CENTER") 
+
+				button:SetScript(
                     "OnClick",
                     function()
-						if not (button:IsEnabled()) then return end
+						if not (button:IsEnabled()) then return end--eta
+						current_spec = snum
                         SelectTab(
                             snum,
-                            "CLContainer" .. inum .. "Sub" .. cnum .. "Sub",
-                            "CLContainer" .. inum .. "Sub" .. cnum,
-                            "CLContainer" .. inum .. "Sub" .. cnum .. "SubButton"
+                            "CLContainer".. inum .."Sub" .. cnum .. "Sub",
+                            "CLContainer".. inum .."Sub" .. cnum,
+                            "CLContainer".. inum .."Sub" .. cnum .. "SubButton"
                         )
-                    end
+						end
                 )
 
                 local frame =
@@ -1284,7 +1542,7 @@ end
                     _G["CLContainer" .. index .. "Sub" .. i]:GetWidth()+10,
                     _G["CLContainer" .. index .. "Sub" .. i]:GetHeight()+35
                 )
-                frame:SetPoint("BOTTOM",1,-40)
+                frame:SetPoint("TOP", 200, - 145)
                 FrameBackground(frame, "Interface\\TalentFrame\\" .. arr[class][j][3])
                 FrameLayout(frame, frame:GetWidth(), frame:GetHeight()+45)
                 frame:Hide()
@@ -1297,6 +1555,7 @@ end
                             function()
                                 if GetTime() - timer >= 0.1 then
                                     FillSpells(class, snum, frame, mode)
+									_G["Zin"] = spell_point_list
                                     frame:SetScript("OnUpdate", nil)
                                 end
                             end
@@ -1308,11 +1567,83 @@ end
             i = i + 1
         end
     end --end of index
+
+
+
+    --ClassLess Bars-- Need to add Regular energy alongside rage
+    local frame = CLBarsFrame or CreateFrame("Frame", "CLBarsFrame", UIParent)
+    frame:SetMovable(true)
+    frame:EnableMouse(true)
+    frame:SetToplevel(true)
+    frame:RegisterForDrag("LeftButton")
+    frame:SetToplevel(true)
+    --frame:SetSize(172, 104)
+    frame:SetSize(172, 79)
+    frame:SetBackdrop(
+        {
+            bgFile = "",
+            edgeFile = "",
+            tile = true,
+            edgeSize = 16,
+            tileSize = 32,
+            insets = {left = 5, right = 5, top = 5, bottom = 5}
+        }
+    )
+    frame:SetPoint("CENTER", 0, 0)
+    frame:SetScript("OnDragStart", frame.StartMoving)
+    frame:SetScript("OnDragStop", frame.StopMovingOrSizing)
+
+	AIO.SavePosition(frame)
+
+    -- local energy={0,1,3,6} -- delete
+    local energy = {1}
+    local colors = {
+        -- [0] = {r = 0, g = 0, b = 255}, -- delete
+        [1] = {r = 255, g = 0, b = 0},
+        -- [3] = {r = 255, g = 255, b = 0} -- delete
+        -- [6]={r=0,g=209,b=255}, -- delete
+    }
+
+    for i = 1, #energy do
+        local e = energy[i]
+        local c = colors[e]
+        local bar = CreateFrame("StatusBar", nil, _G["CLBarsFrame"])
+        bar:SetPoint("TOPLEFT", 8, -20 * (i - 1) - 8)
+        bar:SetWidth(158)
+        bar:SetHeight(20)
+        bar:SetStatusBarTexture("Interface\\TARGETINGFRAME\\UI-StatusBar")
+        bar:GetStatusBarTexture():SetHorizTile(false)
+        bar:GetStatusBarTexture():SetVertTile(false)
+        bar:SetStatusBarColor(c.r, c.g, c.b)
+
+        bar.bg = bar:CreateTexture(nil, "BACKGROUND")
+        bar.bg:SetTexture("Interface\\TARGETINGFRAME\\UI-StatusBar")
+        bar.bg:SetAllPoints(true)
+        -- bar.bg:SetVertexColor(181, 255, 235)
+        bar.bg:SetVertexColor(0, 0, 0)
+
+        bar.value = bar:CreateFontString(nil, "OVERLAY")
+        bar.value:SetPoint("CENTER")
+        bar.value:SetFont("Fonts\\FRIZQT__.TTF", 12, "OUTLINE")
+        bar.value:SetJustifyH("CENTER")
+        bar.value:SetShadowOffset(1, -1)
+        bar.value:SetTextColor(1, 1, 1)
+
+        bar:SetScript(
+            "Onupdate",
+            function()
+                local pw = UnitPower("player", e) or 0
+                local pwm = UnitPowerMax("player", e) or 100
+                bar:SetMinMaxValues(0, pwm)
+                bar:SetValue(pw)
+                bar.value:SetText(pw .. "/" .. pwm)
+            end
+        )
+    end
 end --End of Doshit
 
 --Main Execution
 local MyHandlers = AIO.AddHandlers(handlerName, {})
-
 
 function MyHandlers.LoadVars(player, spr, tpr, tar,rem, rst, prc, scr, rsd)
     --Init

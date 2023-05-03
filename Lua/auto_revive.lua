@@ -1,4 +1,4 @@
-local maxlevel = 80
+local maxlevel = 30
 
 
 local function SKULY(eventid, delay, repeats, player)

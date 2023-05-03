@@ -1,10 +1,15 @@
+--  ___ ___ _ __      _____   ___  ___    ___ ___ ___  _   ___ _  __
+-- | __| __| |\ \    / / _ \ / _ \|   \  | _ \ __| _ \/_\ / __| |/ /
+-- | _|| _|| |_\ \/\/ / (_) | (_) | |) | |   / _||  _/ _ \ (__| ' < 
+-- |_| |___|____\_/\_/ \___/ \___/|___/  |_|_\___|_|/_/ \_\___|_|\_\
+
 
 -- SERVER SECRET
 local serverSecret = randomString(128)
 local handlerName = "yQ4CiWjHET"
 
-local prices = {25000, 50000, 100000, 150000, 250000, 500000}
-local priceItemID = 646004
+local prices = {10000, 50000, 100000, 150000, 200000, 350000}
+
 --Functions
 local function tContains(table, item)
     local index = 1
@@ -52,6 +57,8 @@ local function SendVars(msg, player, resend)
     local sendreset = resets[guid] or 0
     AIO.Handle(player, handlerName, "LoadVars", sendspells, sendtpells, sendtalents, sendstats, sendreset, prices, serverSecret, resend)
 end
+
+
 
 AIO.AddOnInit(SendVars)
 
@@ -103,6 +110,24 @@ local function OnLogin(event, player)
     resets[guid] = reset
 end
 
+local function OnLearn(event, player)
+    local guid = player:GetGUIDLow()
+    local sp, tsp, tal, sta, reset = "", "", "", "0,0,0,0,0", 0
+    local querry = CharDBQuery("SELECT * FROM character_classless WHERE guid = " .. guid)
+    if querry == nil then
+        DBCreate(guid)
+    else
+        sp, tsp, tal, sta, reset = DBRead(querry)
+    end
+    spells[guid] = toTable(sp)
+    tpells[guid] = toTable(tsp)
+    talents[guid] = toTable(tal)
+    stats[guid] = toTable(sta)
+    resets[guid] = reset
+    player:SaveToDB()
+    SendVars(AIO.Msg(), player, true) -- Having resend true fixes overlapping text when a spell is learnt from a roll.
+end
+
 local function OnLogout(event, player)
     local guid = player:GetGUIDLow()
     DBWrite(guid, "spells", toString(spells[guid]))
@@ -120,7 +145,7 @@ end
 RegisterPlayerEvent(2, OnDelete)
 RegisterPlayerEvent(3, OnLogin)
 RegisterPlayerEvent(4, OnLogout)
-
+RegisterPlayerEvent(13, OnLearn)
 
 local plrs = GetPlayersInWorld()
 if plrs then
@@ -136,8 +161,25 @@ function MyHandlers.LearnSpell(player, spr, tpr, clientSecret)
     for i = 1, #spr do
         local spell = spr[i]
         if not player:HasSpell(spell) then
-
             player:LearnSpell(spell)
+        end
+    end
+	for i = 1, #spells[guid] do
+        local spell = spells[guid][i]
+        if not tContains(spr, spell) then
+	        if (spell == 1579) then -- If Tame Beast container spell unlearn what it taught
+		        player:RemoveSpell(1515)
+		        player:RemoveSpell(883)
+		        player:CastSpell(player, 2641, true) -- Dismisses pet before unlearning the spell.
+		        player:RemoveSpell(2641)
+	        end
+            player:RemoveSpell(spell)
+        end
+    end
+    for i = 1, #tpells[guid] do
+        local spell = tpells[guid][i]
+        if not tContains(spr, spell) then
+            player:RemoveSpell(spell)
         end
     end
     spells[guid] = spr
@@ -157,6 +199,12 @@ function MyHandlers.LearnTalent(player, tar, clientSecret)
             player:LearnSpell(spell)
         end
     end
+	for i = 1, #talents[guid] do
+  local talent = talents[guid][i]
+  if not tContains(tar, talent) then
+    player:RemoveSpell(talent)
+  end
+end
     talents[guid] = tar
     DBWrite(guid, "talents", toString(tar))
     player:SaveToDB()
@@ -176,14 +224,12 @@ function MyHandlers.WipeAll(player, clientSecret)
     end
 
     price = prices[rst]
---	print(priceItemID)
---    print(price)
-    if not (player:HasItem(priceItemID,price)) then
-        player:SendNotification("Not enough Shazzian to reset.")
+    if (player:GetCoinage() < price) then
+        player:SendNotification("Not enough money to reset.")
         return 
     end
-	player:RemoveItem(priceItemID,price)
-    --player:ModifyMoney(-price)
+
+    player:ModifyMoney(-price)
 
     table.sort(spells[guid], function(a, b) return a > b end)
     table.sort(tpells[guid], function(a, b) return a > b end)
@@ -226,6 +272,11 @@ function MyHandlers.WipeAll(player, clientSecret)
     SendVars(AIO.Msg(), player, true)
 end
 
+local function OnCommand(event, player, command)
+    if(command == "classes") then
+		return false
+	end
+end
 
 local function PLAYER_EVENT_ON_SAVE(event, player)
     player:SendBroadcastMessage("You're saved! :)")
