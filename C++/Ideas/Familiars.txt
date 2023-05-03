@@ -1,0 +1,10 @@
+- un fel de tame ca si la pet, doar ca asta e mic 
+- poate sa invete ceva chestii ( creste in skills )
+- beneficii non combat 
+	- revive pe loc ? 
+	- poate vinde iteme ?
+	- guild bank
+	- port to last instance entrance
+	- remove res sickness
+	- set bind point for recall
+	

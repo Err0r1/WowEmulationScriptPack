@@ -1,0 +1,3 @@
+- count the number of mobs you manage to kill in a row without taking a break
+- could make monsters scale up a bit after one another
+- keep score ? Or reward with something ?

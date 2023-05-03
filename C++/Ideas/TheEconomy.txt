@@ -1,0 +1,32 @@
+- add custom tokens to game
+	- be active on forum
+	- finish event quest
+	- dethrown one of the leaderboard leaders ( only once a game )
+	- Earn BG points / duels
+	- Full clear instances
+	- advertise server
+	- migrate player from other server
+	- win a design competition of their own custom instance
+	
+- use token to 
+	- purchase familiar transmog
+	- purchase personal instance spanw spots
+	- buy additional personal instance maps
+	- purchase gameobject to spawn in personal instance
+	- purchase creature to spawn in personal instance
+	- purchase special title
+	- purchase special mount
+	- purchase transmog item
+	- add options to familiar ( bind location, remove res sickness, personal vendor, guild bank, port to last instance entrance ... )
+	
+- needed for implementation 
+	- list of instances ( id / name )we can reuse that are not scripted or does not get default handled by game ( BG )
+	- list of gameobjects that are not part of quest, can be looted, used as vendor, crash the server
+	- list of available familiar/ pet skins that do not crash the client, AND, a size that can be used for pets. Each skin needs to get resized to not block vision
+	- SQL table to store acct limitations for personal instances : acctid, max spawns
+	- SQL table with available Familiar skins and sizes to buy
+	- SQL table with available GO entries to buy
+	- SQL table with available Creature entries to buy
+	- SQL table to store acct limitations for familiar skins : acctid, displayid
+	- SQL table to store acct limitations for gameobject spawning : acctid, GOEntry
+	- SQL table to store acct limitations for creature spawning : acctid, CEntry

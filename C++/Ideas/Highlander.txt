@@ -1,0 +1,3 @@
+- there can be only one
+- each player has a rank
+- when a player kills another player with same or higher rank, he will gain rank, other player looses rank

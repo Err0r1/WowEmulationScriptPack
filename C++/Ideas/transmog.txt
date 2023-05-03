@@ -1,0 +1,7 @@
+- make a UI to select item from inventory
+- make UI to select item from dropdown ( dropdown would have all items ever seen )
+- server side make a store for current state of transmog ( slot / item )
+- make server event to trigger after enter game
+- load from DB transmog status
+- apply transmog status
+- only do this if client has transmog UI addon

@@ -1,0 +1,8 @@
+not sure if this exists, should announce events / game addons / stats ....
+quadra kill, penta kill :D
+LOL kill announce system is brilliant :D
+LK or maybe some other important bosses on kill like: Group Normal/HC 10/25 killed the LK in ICC
+Profession Maxed like: NAME maxed Alchemy skill
+
+Note:
+announce system exists as "autobroadcast" table in accounts atm

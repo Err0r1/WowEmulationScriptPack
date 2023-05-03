@@ -1,0 +1,4 @@
+- you need to aquire trophies every day ( skulls )
+- Each player can bes skinned only once per day
+- only works on world map
+- only players that skin other players award trophies <- needs some sort of protection

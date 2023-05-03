@@ -1,0 +1,6 @@
+record every 1-1 duel result. 
+Record winner class health and mana
+If some class is winning more compared to others, slightly nerf it. 
+Make it slower caster ? 
+Make it weaker ( dmg ) ?
+Reduce HP ?

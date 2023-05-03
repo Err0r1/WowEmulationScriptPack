@@ -1,0 +1,5 @@
+- instance cu taguri : 
+	- heal mai mic
+	- dai damage mai mic
+	- te misti mai incet daca esti in combat...
+	- mobii primesc "random" buffs

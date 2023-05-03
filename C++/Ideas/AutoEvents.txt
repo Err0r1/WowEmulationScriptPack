@@ -1,0 +1,10 @@
+- anounce on global chat when an instance enters event mode
+- event can :
+	- reduce mob health
+	- reduce mob damage
+	- give more rewards
+	
+To improve: 
+- auto-restart each day at 00:00 server time 
+- day of the week based
+- also an option like Enabled=0/1 to avoid ####	but that's just optional

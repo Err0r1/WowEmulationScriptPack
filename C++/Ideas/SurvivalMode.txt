@@ -1,0 +1,4 @@
+- survival mode. you start in a map and hunt to get items and hp. last survivor wins
+- you can loot items of other players
+- needs psecial instance ? spawn locations ?
+- needs compas to show players to eliminate others ? Only when a few players remain

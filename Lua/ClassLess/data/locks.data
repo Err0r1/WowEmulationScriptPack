@@ -1,0 +1,33 @@
+--LOCKS
+local tlocks={
+{29144,50029},
+}
+
+if CLDB==nil then CLDB={} end
+	if	CLDB.locks==nil then 
+		CLDB.locks={}
+	end
+	CLDB.locks={}
+	for i=1,#tlocks do
+		local spells=tlocks[i]
+		for j=1,#spells do
+			spell=spells[j]
+			if type(spell)~="table" then 
+				spell={spell} 
+			end
+			for k=1,#spell do
+				tspell=spell[k]
+				if CLDB.locks[tspell]==nil then
+					CLDB.locks[tspell] ={} 
+				end
+				for l=1,#spells do
+					if l~=j then 
+						if type(spells[l])~="table" then
+							tinsert(CLDB.locks[tspell],spells[l]) else for m=1,#spells[l] do tinsert(CLDB.locks[tspell],spells[l][m]) 
+						end 
+					end
+				end
+			end
+		end
+	end
+end

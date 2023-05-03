@@ -1,0 +1,27 @@
+You select or switch between game modes on Taxi in first 2 hours of playtime, no later. (this will be checked by taxi)
+Menu Option to select game mode can look like Normal Mode / IronMan Mode / Hardcode Mode
+Once 2 hours pass you remain with last/current selected mode without possibility to change anymore.
+
+What is IronMan:
+- basically can not buy anything from other players
+- can't use AH, Mail, Trade
+- can't join a guild or sign any petition
++ custom title in game IronMan
+
+What is Hardcode:
+Ironman conditions + full solo mode, no group no nothing
+- can not group
+- can not bg
++ custom title in game Hardcore
+
+What's the point of having this 2 extra game modes?
+
+1. Separate Highscore
+2. Something New
+3. Makes game more challanging
+4. We can make them feel special (exculive NPC shop and after 2 hours 1 free profession,
+ some special mount, 0.1% more dmg in pvp or whatever is easy to code)
+5. Bonus Honor / Arena points for each win
+6. More credits / rewards for whatever.... vote, promote server, etc
+7. Would be even better if we could add like a Chat badge for them if possible or different color name in chat.
+

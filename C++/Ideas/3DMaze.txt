@@ -1,0 +1,3 @@
+- auto generated
+- auto give reward
+- requires personalized instance system

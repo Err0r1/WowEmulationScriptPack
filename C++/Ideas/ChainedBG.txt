@@ -1,0 +1,1 @@
+After completing a BG you would get queued to a new BG. If you continue this queue without leaving, you would gain additional loot

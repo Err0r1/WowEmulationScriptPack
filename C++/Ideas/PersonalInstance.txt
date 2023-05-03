@@ -1,0 +1,3 @@
+- you have spawn commands on this map
+- limited to X amount of items to spawn
+- you can invite others to see your place

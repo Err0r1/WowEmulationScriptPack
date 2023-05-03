@@ -1,0 +1,10 @@
+give clues about locations using lore. Players need to find it
+
+Set a limit to how many spawns
+Spawn penguins modelid1: 25390 sau 24698 on all maps, no clues
+penguin_script - all it has to do on click is to say 
+1. "You found me!", I'll take care of the rest, rewards etc
+2. Remove penguin_script spawn 
+That's it
+
+Probably the hardest part is the random spawn.

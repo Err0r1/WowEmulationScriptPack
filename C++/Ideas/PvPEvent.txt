@@ -1,0 +1,27 @@
+Players use ".event join pvp" command (you can do it #csWhatev)
+Once they join basic query: replace into character_pvpevent guid, oponent, status, rank
+
+
+status 0 - waiting to fight
+status 1 - being teleported
+status 2 - fighting opponent
+
+rank 0 - all start
+rank 1 - one win
+rank 2 - two wins
+etc
+if they lose we don't care, just remove immediately
+
+
+When to trigger the event:
+1. gm command (I can make it, just make start function)
+2. world events (at time X, we need another event type)
+
+How the event runs:
+0. Check if 2 or more players guid are online if not remove offline players from sql
+1. Pair characters 2 by 2 and teleport them somewhere (unk atm) If they are 5 for example ether remove last one or keep it as backup (kind of complicated last part)
+2. Make a NPC script that keeps both of them in a radius and everyone else out of the radius
+3. Count time since they been teleported, if more then 5 min passed kill both and remove from sql
+4. If disconnect/logout/exit remove player from sql and also declare other winner
+5. If all fights are over check if more then 2 remain, if they both finished fights then tp both or again 2 by 2 to unk map for round 2
+6. 1 remains in the end, no matter what, naturally, he's the winner, that's it!

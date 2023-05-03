@@ -1,0 +1,6 @@
+- transmog: show available account items with slots and command + search system + a bit of gfx
+- wheel of fortune and lottery system (will insert winner announcement in Discord ChatBot table)
+- promote server pages like: youtube/videos, live streams, cool moments screenshots, links on social channels or groups (some CP reward for verified/approved)
+- better web shop system, more Wowhead like
+- contact system
+- complex armory
