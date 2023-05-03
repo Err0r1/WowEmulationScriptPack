@@ -7,9 +7,8 @@ The purpose of this is to give examples for new developers to learn from.
 I highly recommend learning from these rather than just grabbing them and using them.
 
 This is highly unorganized and a bit of a mess and that is okay. As it's meant to be a resource in a time where resources are very very sparse.
-I do not maintain this repo is is just a collection. If your hoping i will remove something that you made. 
-I wouldn't hold my breath it will be incredibly hard for me to verify you created it.. 
-This repo consists of over 4000 files and will continue to grow. I just dont have that kind of time to cherry pick through it. 
+I do not maintain this repo is is just a collection.
+This repo consists of over 4000 files and will continue to grow.
 
 ## Disclaimer
 I do not own these scripts nor did i create them.
