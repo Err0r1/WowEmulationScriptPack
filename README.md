@@ -1,7 +1,7 @@
 # Wow Emulation Script Pack
 This is a compilation of every public script .cpp, .diff, .patch, and .lua for wow emulation. Possible the largest to ever exist and will grow.
 
-#Reasoning
+## Reasoning
 These scripts are taken from every public repository i can find the purpose of compiling them all into 1 pack.
 The purpose of this is to give examples for new developers to learn from.
 I highly recommend learning from these rather than just grabbing them and using them.
@@ -11,7 +11,7 @@ I do not maintain this repo is is just a collection. If your hoping i will remov
 I wouldn't hold my breath it will be incredibly hard for me to verify you created it.. 
 This repo consists of 1778 files and will continue to grow. I just dont have that kind of time to cherry pick through it. 
 
-#Disclaimer
+## Disclaimer
 I do not own these scripts nor did i create them.
 Using these scripts may be against their creator's lisence/terms. 
 This is on you I take no responsibility as this was meant to help you learn.
